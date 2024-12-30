@@ -12,7 +12,7 @@ python = "^3.10"
 networkx = "^3.3"
 Faker = "^25.8.0"
 psycopg = {extras = ["binary"], version = "^3.1.19"}
-pygraphviz = "^1.13"
+pygraphviz = "^1.11"
 click = "^8.1.7"
 
 [tool.poetry.group.dev.dependencies]
