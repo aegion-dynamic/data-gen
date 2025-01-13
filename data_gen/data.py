@@ -1,5 +1,6 @@
 import random
 from typing import Any, Dict, Tuple
+import uuid
 
 from faker import Faker
 from psycopg import Connection
@@ -20,7 +21,8 @@ def fill_table(
         )
 
         for i in range(num_rows):
-            print(f"Inserting Row {i}: {column.column_name} = {column.data_type}")
+            print(
+                f"Inserting Row {i}: {column.column_name} = {column.data_type}")
 
             sample_values, sample_types = generate_sample_entry_data(
                 table, dep_graph, db_connection
@@ -35,8 +37,6 @@ def fill_table(
             # Get the column names and values from the sample data
             for column_name, value in sample_values.items():
                 # Skip if the column is an id column
-                if column_name == "id":
-                    continue
 
                 insert_column_names += column_name + ", "
                 insert_column_values = _format_append_value(
@@ -46,6 +46,9 @@ def fill_table(
             # Remove the trailing comma and space
             insert_column_names = insert_column_names[:-2]
             insert_column_values = insert_column_values[:-2]
+
+            if insert_column_names == "":
+                continue
 
             # Construct the SQL insert statement
             insert_statement = f"INSERT INTO {table.full_table_name} ( {insert_column_names} ) VALUES ( {insert_column_values} );"
@@ -71,7 +74,8 @@ def generate_sample_entry_data(
     table_node: TableNode, dep_graph: DepGraph, db_connection: Connection
 ) -> Tuple[Dict[str, Any], Dict[str, str]]:
     print("Table Name:", table_node.full_table_name)
-    print("Number of parent relationships:", len(table_node._parent_relationships))
+    print("Number of parent relationships:",
+          len(table_node._parent_relationships))
     fake = Faker()
     dep_values = get_dep_values(table_node, dep_graph, db_connection)
 
@@ -79,8 +83,12 @@ def generate_sample_entry_data(
     sample_types = {}
 
     for column in table_node.columns:
-        if column.column_name == "id":
-            continue
+        if column.column_name == "id" and column.data_type == "bigserial":
+            continue  # Skip ID generation for bigserial columns
+        elif column.column_name == "id":
+            # Only set UUID for text IDs
+            sample_values["id"] = str(uuid.uuid4())
+            sample_types["id"] = "text"
 
         if column.column_name in dep_values:
             sample_values[column.column_name] = dep_values[column.column_name]
@@ -101,11 +109,13 @@ def generate_sample_entry_data(
         #     )
         #     continue
 
-        print(f"Filling column: {column.column_name} with type: {column.data_type}")
+        print(
+            f"Filling column: {column.column_name} with type: {column.data_type}")
         sample_types[column.column_name] = column.data_type
 
         if column.data_type == "bigint":
             sample_values[column.column_name] = random.randint(0, 2**63 - 1)
+            sample_types[column.column_name] = "bigint"
         elif column.data_type == "integer":
             sample_values[column.column_name] = random.randint(0, 100)
         elif column.data_type == "text":
@@ -119,6 +129,8 @@ def generate_sample_entry_data(
                 sample_values[column.column_name] = fake.word()
             elif column.column_name == "phone_number":
                 sample_values[column.column_name] = fake.phone_number()
+            elif column.column_name == "id":
+                sample_values[column.column_name] = str(uuid.uuid4())
             else:
                 sample_values[column.column_name] = fake.sentence()
         elif column.data_type == "date":
@@ -131,7 +143,7 @@ def generate_sample_entry_data(
             sample_values[column.column_name] = '{"key": "value"}'
         elif (
             column.data_type == "timestamp"
-            or column.data_type == "timestamp with time zone" 
+            or column.data_type == "timestamp with time zone"
             or column.data_type == "timestamp without time zone"
         ):
             sample_values[column.column_name] = fake.iso8601()
@@ -140,8 +152,8 @@ def generate_sample_entry_data(
             print("WARNING: User defined type not handled")
             user_type = get_user_defined_type(
                 schema_name=table_node.schema_name,
-                table_name=table_node.table_name, 
-                column_name=column.column_name, 
+                table_name=table_node.table_name,
+                column_name=column.column_name,
                 conneciton=db_connection
             )
             print(f"User defined type: {user_type}")
@@ -149,9 +161,12 @@ def generate_sample_entry_data(
             # Get the enum options
             enum_options = get_enum_options(user_type, db_connection)
             sample_values[column.column_name] = random.choice(enum_options)
-
+        elif column.data_type == "numeric":
+            sample_values[column.column_name] = random.randint(0, 100)
+            sample_types[column.column_name] = "numeric"
         else:
-            raise ValueError(f"Data type {column.data_type} not supported for column {column.column_name} in table {table_node.full_table_name}")
+            raise ValueError(
+                f"Data type {column.data_type} not supported for column {column.column_name} in table {table_node.full_table_name}")
 
         print(
             f"Filling column: {column.column_name} with value: {sample_values[column.column_name]}"
@@ -163,6 +178,10 @@ def generate_sample_entry_data(
 def _format_append_value(
     sample_types: Dict[str, str], column_name: str, insert_statement: str, value: Any
 ) -> str:
+    if value is None and column_name != "id":
+        insert_statement += "NULL, "
+        return insert_statement
+
     if sample_types[column_name] == "bigint" or sample_types[column_name] == "int":
         insert_statement += f"{value}, "
     elif (
@@ -187,22 +206,22 @@ def get_dep_values(
     dep_values = {}
 
     for parent in table_node._parent_relationships:
+        dep_values = {}
+    for parent in table_node._parent_relationships:
         parent_table_name = parent._parent_table
         parent_column_name = parent._parent_column
-        child_table_name = parent._child_table
-        child_column_name = parent._child_column
 
         select_query = f"SELECT {parent_column_name} FROM {parent_table_name} ORDER BY RANDOM() LIMIT 1;"
-        print("Select Query:", select_query)
-
         cursor = db_connection.cursor()
         cursor.execute(select_query)
         row = cursor.fetchone()
 
         if row is None:
-            raise Exception("No rows in result set")
+            # Fallback for empty parent tables
+            print(f"No rows in {parent_table_name}. Using a default value.")
+            dep_values[parent._child_column] = None
+            continue
 
-        column_value = row[0]
-        dep_values[child_column_name] = column_value
+        dep_values[parent._child_column] = row[0]
 
     return dep_values
