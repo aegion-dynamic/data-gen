@@ -1,0 +1,24 @@
+[
+    {
+        "name": "relationship",
+        "description": "A relationship between two entities.",
+        "source_field_schema": "",
+        "target_field_schema": "",
+        "source_field_table": "",
+        "target_field_table": "",
+        "source_field_column": "",
+        "target_field_column": "",
+        "target_field_lookup_column": ""
+    },
+    {
+        "name": "relationship2",
+        "description": "A relationship between two entities.",
+        "source_field_schema": "",
+        "target_field_schema": "",
+        "source_field_table": "",
+        "target_field_table": "",
+        "source_field_column": "",
+        "target_field_column": "",
+        "target_field_lookup_column": ""
+    }
+]

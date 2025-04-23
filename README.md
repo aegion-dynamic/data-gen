@@ -32,10 +32,10 @@ In order to perform the data migration, we use this system to perform all the da
 -- table_data
    -- <schema_name>_<table_name>.csv
    -- <schema_name>_<table_name>.csv
+   -- relationships.json
 -- users
     -- users.csv
     -- cognito_config.json
--- relationships.json
 Makefile (Default make file)
 ```
 

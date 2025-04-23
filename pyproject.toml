@@ -5,7 +5,13 @@ description = "A Postgres Data Generator Project"
 authors = ["Radhakrishna Sanka <rkrishnasanka@gmail.com>"]
 license = "BSD-3"
 readme = "README.md"
-include = ["data_gen", "data_migration"]
+packages = [
+    { include = "data_gen" },
+    { include = "data_migration" }
+]
+
+include=["data_migration/default_templates/**"]
+
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -23,3 +29,7 @@ isort = "^5.13.2"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+data-gen = "data_gen.cli:main"
+data-migrate = "data_migration.cmdline:cli"
