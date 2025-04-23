@@ -5,7 +5,7 @@ description = "A Postgres Data Generator Project"
 authors = ["Radhakrishna Sanka <rkrishnasanka@gmail.com>"]
 license = "BSD-3"
 readme = "README.md"
-include = ["data_gen"]
+include = ["data_gen", "data_migration"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
