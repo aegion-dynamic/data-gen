@@ -92,6 +92,12 @@ class TableNode:
     def sdd_parent_relationship(self, parent_relationship: ForeignKeyConstraint):
         self._parent_relationships.append(parent_relationship)
 
+    def get_csv_header(self) -> str:
+        """
+        Get the CSV header for the table.
+        """
+        return ",".join([col.column_name for col in self._columns])
+
     def __str__(self):
         ret = f"Table: {self._full_table_name}\n"
         ret += (

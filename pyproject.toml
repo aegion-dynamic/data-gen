@@ -20,6 +20,8 @@ Faker = "^25.8.0"
 psycopg = {extras = ["binary"], version = "^3.1.19"}
 pygraphviz = "^1.11"
 click = "^8.1.7"
+pydantic = "^2.11.3"
+boto3 = "^1.38.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.4.2"

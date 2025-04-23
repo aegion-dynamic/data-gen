@@ -1,6 +1,13 @@
+import json
 import click
 from pathlib import Path
 
+import psycopg
+
+from data_gen.depgraph import DepGraph
+from data_gen.inspection import generate_dependency_graph
+from data_migration.cognito import CognitoConfig, UserModel, create_cognito_users, update_cognito_users
+from data_migration.data_templates import generate_date_templates, print_fill_order
 from data_migration.utils import copy_from_templates
 
 @click.group()
@@ -36,9 +43,68 @@ def init_dir(target_dir):
     # Copy the makefile from default_template
     makefile_path = "Makefile"
     copy_from_templates(file_name=makefile_path, output_path=target_dir / "Makefile")
-   
 
+@cli.command()
+def generate_users():
+
+    # Default cognito config file path
+    cognito_config_path = Path("users/cognito_config.json")
+    users_path = Path("users/users.csv")
+
+
+    # Load the cognito config file
+    if not cognito_config_path.exists():
+        raise FileNotFoundError(f"Cognito config file {cognito_config_path} not found.")
     
+    # Load the cognito config file
+    with open(cognito_config_path, 'r') as f:
+        cognito_config_data = json.load(f)
+
+    cognito_config = CognitoConfig(**cognito_config_data)
+    
+    # Get users from csv 
+    users = UserModel.from_csv(users_path)
+    
+    # Create cognito users
+    create_cognito_users(users, cognito_config)
+    print("Cognito users creation completed.")
+    update_cognito_users(users, users_path)
+    print("Cognito users updated in the CSV file.")
+
+@cli.command()
+def generate_data_templates():
+    # Connect to the database and generate the dependency graph
+
+    connection = psycopg.connect(
+        "host=localhost dbname=postgres user=postgres password=postgres port=5432"
+    )
+
+    # Ping the database
+    try:
+        connection.cursor()
+    except psycopg.OperationalError:
+        print("Failed to connect to the database")
+        return 1
+
+    # Create DepGraph
+    dep_graph = DepGraph()
+
+
+    # Generate the dependency graph
+    generate_dependency_graph(dep_graph, connection)
+
+    # Generate the data templates
+    generate_date_templates(dep_graph, (Path("table_data")))
+
+    # Generate the dependency order
+    print_fill_order(dep_graph)
+    print("Data templates fill order generated successfully.")
+    
+
+
+
+
+
 
 
     
