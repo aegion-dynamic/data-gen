@@ -70,10 +70,10 @@ class DepGraph(nx.DiGraph):
             print(f"{edge[0]} -> {edge[1]}")
             print("\n")
 
-    def draw_graph(G, filename: str = "depgraph") -> None:
+    def draw_graph(self,, filename: str = "depgraph") -> None:
         tt = pathlib.Path("./").joinpath(filename + ".dot")
         print("output:", str(tt.absolute()))
-        nx.nx_agraph.to_agraph(G).write(str(tt.absolute()))
+        nx.nx_agraph.to_agraph(self).write(str(tt.absolute()))
 
         os.system(
             "dot -Tpdf {} -o {}.pdf".format(

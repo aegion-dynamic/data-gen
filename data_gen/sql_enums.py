@@ -79,6 +79,9 @@ def get_user_defined_type(
     cursor = conneciton.cursor()
     cursor.execute(query)
 
+    if cursor is None:
+        raise ValueError(f"User defined type not found for: {schema_name}.{table_name}.{column_name}")
+    
     ret = cursor.fetchone()[0]
 
     if ret is None:
