@@ -6,8 +6,8 @@ import psycopg
 
 from data_gen.depgraph import DepGraph
 from data_gen.inspection import generate_dependency_graph
-from data_migration.cognito import CognitoConfig, UserModel, create_cognito_users, update_cognito_users
-from data_migration.data_templates import generate_date_templates, print_fill_order
+from data_migration.users import CognitoConfig, UserModel, create_cognito_users, update_cognito_users
+from data_migration.data_templates import generate_date_templates, generate_relationships, print_fill_order
 from data_migration.utils import copy_from_templates
 
 @click.group()
@@ -89,27 +89,43 @@ def generate_data_templates():
     # Create DepGraph
     dep_graph = DepGraph()
 
-
     # Generate the dependency graph
     generate_dependency_graph(dep_graph, connection)
 
     # Generate the data templates
     generate_date_templates(dep_graph, (Path("table_data")))
 
+    print("Data templates generated successfully.")
+    # Generate the relationships
+    generate_relationships(dep_graph, (Path("table_data/relationships.jsonl")))
+    
     # Generate the dependency order
     print_fill_order(dep_graph)
     print("Data templates fill order generated successfully.")
     
 
+@cli.command()
+def populate_db():
+    # Connect to the database and generate the dependency graph
+    connection = psycopg.connect(
+        "host=localhost dbname=postgres user=postgres password=postgres port=5432"
+    )
 
+    # Ping the database
+    try:
+        connection.cursor()
+    except psycopg.OperationalError:
+        print("Failed to connect to the database")
+        return 1
 
+    # Create DepGraph
+    dep_graph = DepGraph()
 
+    # Generate the dependency graph
+    generate_dependency_graph(dep_graph, connection)
 
-
-
-    
-
-
+    # Populate the database with data templates
+    pass
 
 if __name__ == "__main__":
     cli()

@@ -46,6 +46,24 @@ def create_cognito_users(users: List[UserModel], cognito_config: CognitoConfig):
     client = boto3.client("cognito-idp", region_name=cognito_config.region)
 
     for user in users:
+        # Check if the user exists
+        try:
+            response = client.admin_get_user(
+                UserPoolId=cognito_config.user_pool_id,
+                email=user.email,
+            )
+            print(f"User {user.username} already exists with ID: {response['User']['Attributes']}")
+            user.external_id = next(
+                (attr["Value"] for attr in response["User"]["Attributes"] if attr["Name"] == "sub"),
+                None,
+            )
+        except client.exceptions.UserNotFoundException:
+            # User does not exist, create a new user
+            pass
+        except Exception as e:
+            print(f"Error checking user {user.username}: {e}")
+            continue
+        # Create the user if it does not exist
         try:
             response = client.admin_create_user(
                 UserPoolId=cognito_config.user_pool_id,
