@@ -24,6 +24,10 @@ class ForeignKeyConstraint:
     @property
     def parent_column(self) -> str:
         return self._parent_column
+    
+    @property
+    def child_column(self) -> str:
+        return self._child_column
 
     @property
     def parent_table(self) -> str:
