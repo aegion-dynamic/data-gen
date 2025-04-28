@@ -97,7 +97,7 @@ def generate_data_templates():
 
     print("Data templates generated successfully.")
     # Generate the relationships
-    generate_relationships(dep_graph, (Path("table_data/relationships.jsonl")))
+    generate_relationships(dep_graph, (Path("table_data/relationships.json")))
     
     # Generate the dependency order
     print_fill_order(dep_graph)

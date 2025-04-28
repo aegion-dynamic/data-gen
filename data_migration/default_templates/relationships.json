@@ -1,6 +1,6 @@
-[
-    {
-        "name": "relationship",
+{
+    "foreignkey1": {
+        "name": "relationship1",
         "description": "A relationship between two entities.",
         "source_field_schema": "",
         "target_field_schema": "",
@@ -10,7 +10,7 @@
         "target_field_column": "",
         "target_field_lookup_column": ""
     },
-    {
+    "foreignkey2":{
         "name": "relationship2",
         "description": "A relationship between two entities.",
         "source_field_schema": "",
@@ -21,4 +21,4 @@
         "target_field_column": "",
         "target_field_lookup_column": ""
     }
-]
+}

@@ -60,10 +60,10 @@ pip install data-gen@git+https://github.com/aegion-dynamic/data-gen
 
 Download the Makefile from the repository and place it in the target directory.
 
-#### Step 1: Setup the Migration Directory
+### Step 1: Setup the Migration Directory
 
 ```sh
-make setup-dir
+make init-dir
 ```
 
 This will create the directory structure for the migration. If the target directory isn't passed, it will create the directory in the current working directory.

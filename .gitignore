@@ -138,3 +138,5 @@ Temporary Items
 
 # IntelliJ based IDEs
 .idea
+
+test/*

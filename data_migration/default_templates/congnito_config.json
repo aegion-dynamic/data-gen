@@ -1,7 +1,6 @@
 {
-    "client_id": "your_client_id",
-    "client_secret": "your_client_secret",
+    "iam_access_key": "your_client_id",
+    "iam_access_secret": "your_client_secret",
     "region": "your_region",
-    "user_pool_id": "your_user_pool_id",
-    "identity_pool_id": "your_identity_pool_id"
+    "user_pool_id": "your_user_pool_id"
 }
